@@ -6,6 +6,10 @@
 			radius: 25,
 			blur: 15
 		};
+	var latMax = -Number.MAX_VALUE;
+	var longMax = -Number.MAX_VALUE;
+	var latMin = Number.MAX_VALUE;
+	var longMin = Number.MAX_VALUE;
 
 	// Start at the beginning
 	stageOne();
@@ -94,7 +98,7 @@
 			}
 
 			// Heatpoint frequency check
-			function getHeatPoints ( locations ) {
+			function getHeatPoints ( locations, num) {
 				var frequencyTable = new Array();
 				var locationLength = locations.length;
 				for (var i = 0; i < locationLength; i++) {
@@ -106,14 +110,22 @@
 					}
 				}
 				var keys = []; for(var key in frequencyTable) keys.push(key);
-    			return keys.sort(function(a,b){return frequencyTable[b]-frequencyTable[a]});
+    			return keys.sort(function(a,b){return frequencyTable[b]-frequencyTable[a]}).slice(0,num);
 			}
 
 			// Draw top visiting locations on map
-			function getFrequencyMarker(freqList, num) {
-				for (var i = 0; i < num; i++) {
+			// Fix zoom configuration
+			function getFrequencyMarker(freqList) {
+				var listLength = freqList.length;
+				for (var i = 0; i < listLength; i++) {
 					var curCoord = freqList[i].split(',');
-					var marker = L.marker([Number(curCoord[0]), Number(curCoord[1])]).addTo(map);
+					var curLat = Number(curCoord[0]);
+					var curLong = Number(curCoord[1]);
+					var marker = L.marker([curLat, curLong]).addTo(map);
+					if (curLat > latMax) latMax = curLat;
+					if (curLat < latMin) latMin = curLat;
+					if (curLong > longMax) longMax = curLong;
+					if (curLong < longMin) longMin = curLong;
 				}
 			}
 
@@ -141,7 +153,8 @@
 				heat._latlngs = latlngs;
 
 				
-				getFrequencyMarker(getHeatPoints(latlngs), 20);
+				getFrequencyMarker(getHeatPoints(latlngs, 20));
+
 				heat.redraw();
 				stageThree( /* numberProcessed */ latlngs.length );
 			};
@@ -172,7 +185,8 @@
 			$done.fadeOut();
 
 			// TODO: autozoom
-			map.fitBounds([[40.712, -74.227],[40.774, -74.125]]);
+			// map.fitBounds([[40.712, -74.227],[40.774, -74.125]]);
+			map.fitBounds([[latMin, longMin], [latMax, longMax]]);
 			activateControls();
 		} );
 
