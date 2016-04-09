@@ -2,7 +2,7 @@
 	var map, heat,
 		heatOptions = {
 			tileOpacity: 1,
-			heatOpacity: 1,
+			heatOpacity: 0.5,
 			radius: 25,
 			blur: 15
 		};
@@ -15,6 +15,7 @@
 
 		// Initialize the map
 		map = L.map( 'map' ).setView([0,0], 2);
+		// map = L.map( 'map' ).setView([50,50], 9);
 		L.tileLayer( 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: 'location-history-visualizer is open source and available <a href="https://github.com/theopolisme/location-history-visualizer">on GitHub</a>. Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors.',
 			maxZoom: 18,
@@ -92,6 +93,30 @@
 				return locations;
 			}
 
+			// Heatpoint frequency check
+			function getHeatPoints ( locations ) {
+				var frequencyTable = new Array();
+				var locationLength = locations.length;
+				for (var i = 0; i < locationLength; i++) {
+					var newCoord = (Number(locations[i][0]).toFixed(4)).concat(',').concat(Number(locations[i][1]).toFixed(4));
+					if (newCoord in frequencyTable) {
+						frequencyTable[newCoord]++;
+					} else {
+						frequencyTable[newCoord] = 1;
+					}
+				}
+				var keys = []; for(var key in frequencyTable) keys.push(key);
+    			return keys.sort(function(a,b){return frequencyTable[b]-frequencyTable[a]});
+			}
+
+			// Draw top visiting locations on map
+			function getFrequencyMarker(freqList, num) {
+				for (var i = 0; i < num; i++) {
+					var curCoord = freqList[i].split(',');
+					var marker = L.marker([Number(curCoord[0]), Number(curCoord[1])]).addTo(map);
+				}
+			}
+
 			reader.onprogress = function ( e ) {
 				var percentLoaded = Math.round( ( e.loaded / e.total ) * 100 );
 				status( percentLoaded + '% of ' + fileSize + ' loaded...' );
@@ -115,6 +140,8 @@
 
 				heat._latlngs = latlngs;
 
+				
+				getFrequencyMarker(getHeatPoints(latlngs), 20);
 				heat.redraw();
 				stageThree( /* numberProcessed */ latlngs.length );
 			};
@@ -129,7 +156,8 @@
 
 	function stageThree ( numberProcessed ) {
 		var $done = $( '#done' );
-
+		
+		
 		// Change tabs :D
 		$( 'body' ).removeClass( 'working' );
 		$( '#working' ).addClass( 'hidden' );
@@ -142,6 +170,9 @@
 		$done.one( 'click', function () {
 			$( 'body' ).addClass( 'map-active' );
 			$done.fadeOut();
+
+			// TODO: autozoom
+			map.fitBounds([[40.712, -74.227],[40.774, -74.125]]);
 			activateControls();
 		} );
 
