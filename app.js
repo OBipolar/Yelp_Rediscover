@@ -1,10 +1,10 @@
 ( function ( $, L, prettySize ) {
 	var map, heat,
 		heatOptions = {
-			tileOpacity: 1,
-			heatOpacity: 0.5,
-			radius: 25,
-			blur: 15
+			tileOpacity: 0.5,
+			heatOpacity: 1.0,
+			radius: 10,
+			blur: 5
 		};
 	var latMax = -Number.MAX_VALUE;
 	var longMax = -Number.MAX_VALUE;
@@ -121,7 +121,12 @@
 					var curCoord = freqList[i].split(',');
 					var curLat = Number(curCoord[0]);
 					var curLong = Number(curCoord[1]);
-					var marker = L.marker([curLat, curLong]).addTo(map);
+					// var marker = L.marker([curLat, curLong]).addTo(map);
+					var circle = L.circle([curLat, curLong], 500, {
+    					color: 'red',
+    					fillColor: '#f03',
+    					fillOpacity: 0.5
+					}).addTo(map);
 					if (curLat > latMax) latMax = curLat;
 					if (curLat < latMin) latMin = curLat;
 					if (curLong > longMax) longMax = curLong;
@@ -184,8 +189,6 @@
 			$( 'body' ).addClass( 'map-active' );
 			$done.fadeOut();
 
-			// TODO: autozoom
-			// map.fitBounds([[40.712, -74.227],[40.774, -74.125]]);
 			map.fitBounds([[latMin, longMin], [latMax, longMax]]);
 			activateControls();
 		} );

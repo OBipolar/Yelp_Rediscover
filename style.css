@@ -65,7 +65,7 @@ h2 {
 	text-align: center
 }
 
-.note {
+.banner {
   padding: 10px;
   text-align: center;
   background-color: #ffeb3b;
@@ -192,6 +192,10 @@ h2 {
 .spinner .bounce2 {
   -webkit-animation-delay: -0.16s;
   animation-delay: -0.16s;
+}
+
+.leaflet-heatmap-layer {
+  opacity: .4;
 }
 
 @-webkit-keyframes bouncedelay {
