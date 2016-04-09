@@ -1,0 +1,22 @@
+{
+  "name": "Yelp_Rediscover",
+  "homepage": "https://github.com/OBipolar/Yelp_Rediscover",
+  "authors": [
+    "OBipolar <shaohuixu13@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "GNU",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.3",
+    "leaflet": "^0.7.7",
+    "leaflet.heat": "Leaflet.heat#*"
+  }
+}
