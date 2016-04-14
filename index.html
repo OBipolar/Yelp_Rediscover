@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>location-history-visualizer</title>
+    <title>Yelp Rediscover</title>
     <link rel="stylesheet" href="style.css"/>
     <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css"/>
 </head>
@@ -16,16 +16,17 @@
         <div class="content">
             <!-- Intro, before data has been uploaded -->
             <div id="intro" class="content-box">
-                <h2>Location History Visualizer</h2>
-                <div class="note">
-                    <strong>Note:</strong> This tool only generates heatmaps. If you're looking for minute-by-minute analysis of your Location History, including accuracy information, location-based search, advanced filtering and measurement tools, and more, check out <strong><a href="https://theopatt.com/lhv-pro">Location History Visualizer Pro</a></strong>.
+                <h2>Yelp Rediscover</h2>
+                <div class="banner">
+                    <strong></strong>Check out your passby spots which you never get into start from today! Developed based on <strong><a href="https://github.com/theopolisme/location-history-visualizer">Location History Visualizer</a></strong>.
                 </div>
-                <p>Welcome to <b>location-history-visualizer</b>, a tool for visualizing your collected Google <a href="https://google.com/locationhistory" target="_blank">Location History</a> data with heatmaps. <i>Don't worry&mdash;all processing and visualization happens directly on your computer, so rest assured that nobody is able to access your Location History but you... and Google, of course.</i> ^.^</p>
+                <p>Welcome to <b>Yelp Rediscover</b>, a tool for visualizing your collected Google <a href="https://google.com/locationhistory" target="_blank">Location History</a> data with heatmaps and try to find best nearby restaurants for you! <i>Don't worry&mdash;all processing and visualization happens directly on your computer, so rest assured that nobody is able to access your Location History but you... and Google, of course.</i> ^.^</p>
                 <p>To start off, you'll need to go to <a href="https://google.com/takeout" target="_blank">Google Takeout</a> to download your Location History data: on that page, deselect everything except Location History by clicking "Select none" and then reselecting "Location History". Then hit "Next" and, finally, click "Create archive". Once the archive has been created, click "Download". Unzip the downloaded file, and open the "Location History" folder within. <b>Then, drag and drop <i>LocationHistory.json</i> from inside that folder onto this page.</b> Let the visualization begin!</p>
                 <p class="fallback">Alternatively, select your <b>LocationHistory.json</b> file directly: <input name="file" type="file" id="file"></input></p>
                 <hr>
-                <p><i>Experimental (even faster!) import method:</i> Instead of going through Google Takeout, simply browse to the <a href="https://maps.google.com/locationhistory/kml?startTime=0&endTime=9000000000000" target="_blank">Google Location History KML API endpoint</a>. A file (<b>history-12-31-1969.kml</b>) will be downloaded &ndash; just drag and drop it onto this page, and we're off! <i>Note:</i> This uses a non-public Google API and as such may cease to work at any point. Your mileage may vary.</p>
-                <p class="credit">A project by <a href="https://theopolis.me" target="_blank">@theopolisme</a>. Made in 2014 in Memphis, Tennessee (updated 2015).</p>
+<!--                 <p><i>Experimental (even faster!) import method:</i> Instead of going through Google Takeout, simply browse to the <a href="https://maps.google.com/locationhistory/kml?startTime=0&endTime=9000000000000" target="_blank">Google Location History KML API endpoint</a>. A file (<b>history-12-31-1969.kml</b>) will be downloaded &ndash; just drag and drop it onto this page, and we're off! <i>Note:</i> This uses a non-public Google API and as such may cease to work at any point. Your mileage may vary.</p>
+ -->            
+                    <p>Built by Steven "Hova" Xu using jQuery with LOVE,</p>
             </div>
 
             <!-- Shown in interim while processing is in progress -->
@@ -46,13 +47,12 @@
                 <h2>Render complete!</h2>
                 <p>Successfully processed <span id="numberProcessed"></span> data points to generate the heatmap. Click inside this box to dismiss it and start exploring...</p>
                 <p><i>Zoom</i> by scrolling, double-clicking, or using the buttons in the upper lefthand corner. <i>Navigate</i> by clicking and dragging. Hover over the menu in the lower lefthand corner to customize the heatmap rendering.</p>
-                <p class="credit">A project by <a href="http://theopolis.me" target="_blank">@theopolisme</a>. Made in 2014 in Memphis, Tennessee.</p>
             </div>
         </div>
     </div>
 
     <!-- Appear when heatmap is displayed -->
-    <div id="controls">
+<!--     <div id="controls">
         <div class="title">
             location-history-visualizer
             <span>(hover for additional controls)</span>
@@ -76,7 +76,7 @@
         <div class="control-block actions">
             <button id="reset">Reset to defaults</button>
         </div>
-    </div>
+    </div> -->
 
     <!-- The map, populated by leaflet.js -->
     <div id="map"></div>
@@ -87,6 +87,11 @@
 <script src="bower_components/dropzone/dist/dropzone.js"></script>
 <script src="bower_components/leaflet.heat/dist/leaflet-heat.js"></script>
 <script src="bower_components/prettysize-bower/prettysize.js"></script>
+<!-- <script src="bower_components/oauth/index.js"></script> -->
+<script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/oauth.js"></script>
+<script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/sha1.js"></script>
+<!-- <script type="text/javascript" src="https://raw.github.com/padolsey/prettyPrint.js/master/prettyprint.js"></script> -->
+<!-- <script src="cred.json"></script> -->
 <script src="app.js"></script>
 
 <!-- Google Analytics -->

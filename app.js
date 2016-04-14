@@ -6,10 +6,30 @@
 			radius: 10,
 			blur: 5
 		};
+	// var authData = JSON.parse(authData);
+	// console.log(authData);
+	
+
+	var auth = {
+		//
+		// Update with your Yelp auth tokens.
+		//
+		consumerKey : "#####",
+		consumerSecret : "#####",
+		accessToken : "#####",
+		accessTokenSecret : "#####",
+		serviceProvider : {
+			signatureMethod : "HMAC-SHA1"
+		}
+	}
+	var spotList = new Array();
+	var spotInfo = [];
+
 	var latMax = -Number.MAX_VALUE;
 	var longMax = -Number.MAX_VALUE;
 	var latMin = Number.MAX_VALUE;
 	var longMin = Number.MAX_VALUE;
+
 
 	// Start at the beginning
 	stageOne();
@@ -19,7 +39,6 @@
 
 		// Initialize the map
 		map = L.map( 'map' ).setView([0,0], 2);
-		// map = L.map( 'map' ).setView([50,50], 9);
 		L.tileLayer( 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: 'location-history-visualizer is open source and available <a href="https://github.com/theopolisme/location-history-visualizer">on GitHub</a>. Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors.',
 			maxZoom: 18,
@@ -113,6 +132,68 @@
     			return keys.sort(function(a,b){return frequencyTable[b]-frequencyTable[a]}).slice(0,num);
 			}
 
+			function getSpotMarker(spotData) {
+				var len = spotData.length;
+				for (var i = 0; i < len; i++) {
+					var name = spotData[i].name;
+					if (!(name in spotList)) {
+						var curLat = spotData[i].location.coordinate.latitude;
+						var curLong = spotData[i].location.coordinate.longitude;
+						var name = spotData[i].name;
+						var rating = spotData[i].rating;
+						var address = spotData[i].location.address;
+						var url = spotData[i].url;
+						var imgUrl = spotData[i].image_url;
+						var marker = L.marker([curLat, curLong]);
+						marker.bindPopup("<b>" + name + "</b><br>Raring:" + rating + "<br>" + address).openPopup();
+						marker.addTo(map);
+						var details = {bizName: name, bizRating: rating, bizAdd: address, bizUrl: url, bizImg: imgUrl.replace("ms.jpg","ls.jpg")};
+						spotInfo.push(details);
+						spotList[name] = 0;
+					}
+				} 
+			}
+
+			function getYelpInfo(curLat, curLong) {
+				var info;
+				var terms = 'food';
+				var accessor = {
+					consumerSecret : auth.consumerSecret,
+					tokenSecret : auth.accessTokenSecret
+				};
+				parameters = [];
+				parameters.push(['term', terms]);
+				parameters.push(['sort', '2']);
+				parameters.push(['limit', '5']);				
+				parameters.push(['ll', curLat +','+ curLong]);
+				parameters.push(['callback', 'cb']);
+				parameters.push(['radius_filter', '800']);
+				parameters.push(['oauth_consumer_key', auth.consumerKey]);
+				parameters.push(['oauth_consumer_secret', auth.consumerSecret]);
+				parameters.push(['oauth_token', auth.accessToken]);
+				parameters.push(['oauth_signature_method', 'HMAC-SHA1']);
+				var message = {
+					'action' : 'http://api.yelp.com/v2/search',
+					'method' : 'GET',
+					'parameters' : parameters
+				};
+				OAuth.setTimestampAndNonce(message);
+				OAuth.SignatureMethod.sign(message, accessor);
+				var parameterMap = OAuth.getParameterMap(message.parameters);
+				parameterMap.oauth_signature = OAuth.percentEncode(parameterMap.oauth_signature)
+				$.ajax({
+					'url' : message.action,
+					'data' : parameterMap,
+					'cache' : true,
+					'dataType' : 'jsonp',
+					'jsonpCallback' : 'cb',
+					'success' : function(data, textStats, XMLHttpRequest) {
+						getSpotMarker(data['businesses']);
+					}
+				});
+				// return(info);
+			}
+
 			// Draw top visiting locations on map
 			// Fix zoom configuration
 			function getFrequencyMarker(freqList) {
@@ -121,11 +202,12 @@
 					var curCoord = freqList[i].split(',');
 					var curLat = Number(curCoord[0]);
 					var curLong = Number(curCoord[1]);
+					getYelpInfo(curLat, curLong);
 					// var marker = L.marker([curLat, curLong]).addTo(map);
-					var circle = L.circle([curLat, curLong], 500, {
+					var circle = L.circle([curLat, curLong], 800, {
     					color: 'red',
     					fillColor: '#f03',
-    					fillOpacity: 0.5
+    					fillOpacity: 0.2
 					}).addTo(map);
 					if (curLat > latMax) latMax = curLat;
 					if (curLat < latMin) latMin = curLat;
@@ -158,7 +240,7 @@
 				heat._latlngs = latlngs;
 
 				
-				getFrequencyMarker(getHeatPoints(latlngs, 20));
+				getFrequencyMarker(getHeatPoints(latlngs, 30));
 
 				heat.redraw();
 				stageThree( /* numberProcessed */ latlngs.length );
@@ -185,13 +267,44 @@
 		$( '#numberProcessed' ).text( numberProcessed.toLocaleString() );
 
 		// Fade away when clicked
+		// Also add spot info listview
 		$done.one( 'click', function () {
+			var sidebar;
 			$( 'body' ).addClass( 'map-active' );
 			$done.fadeOut();
 
 			map.fitBounds([[latMin, longMin], [latMax, longMax]]);
+			
+			$('body').css({
+    			'padding-right': '250px'
+  			});
+  			sidebar = $(populateSidebar());
+			sidebar.css({
+				'position': 'fixed',
+			    'right': '0px',
+			    'top': '0px',
+			    'z-index': 9999,
+			    'width': '250px',
+			    'height': '100%',
+			    'overflow-y':'auto',
+			    'background-color': 'white'  // Confirm it shows up
+			});
+			$('body').append(sidebar); 
+			console.log(spotInfo);
 			activateControls();
 		} );
+
+		function populateSidebar () {
+			var divContent = "<div id='sidebar'>";
+			var len = spotInfo.length;
+			for (var i = 0; i < len; i++) {
+				divContent = divContent + '<div class="card"><div class="card-image"><a href=' + spotInfo[i].bizUrl + '><img src='+spotInfo[i].bizImg+'></a><h3>'+spotInfo[i].bizName+'</h3></div>';
+
+				divContent = divContent + '<p>Rating:'+ spotInfo[i].bizRating +'</p><p>' + spotInfo[i].bizAdd+'</p></div>';  
+			}
+			divContent = divContent + "</div>";
+			return divContent;
+		}
 
 		function activateControls () {
 			var $tileLayer = $( '.leaflet-tile-pane' ),
@@ -229,7 +342,6 @@
 				$.extend( heatOptions, originalHeatOptions );
 				updateInputs();
 				heat.setOptions( heatOptions );
-				// Reset opacity too
 				$heatmapLayer.css( 'opacity', originalHeatOptions.heatOpacity );
 				$tileLayer.css( 'opacity', originalHeatOptions.tileOpacity );
 			} );
